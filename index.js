@@ -74,3 +74,14 @@ client.on("interactionCreate", async (interaction) => {
 
 client.login(process.env.BOT_TOKEN);
 
+// --- Render용: 포트 열어두기(무료 Web Service 유지용) ---
+const express = require("express");
+const app = express();
+
+app.get("/", (req, res) => res.send("OK"));
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Web server listening on ${PORT}`);
+});
+
