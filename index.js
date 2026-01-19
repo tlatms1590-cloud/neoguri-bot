@@ -1,3 +1,4 @@
+const express = require("express");
 const {
   Client,
   GatewayIntentBits,
@@ -5,6 +6,17 @@ const {
   EmbedBuilder
 } = require("discord.js");
 
+// --- Render용: 포트 열어두기(무료 Web Service 유지용) ---
+// ✅ Render는 process.env.PORT 를 반드시 사용해야 함
+const app = express();
+app.get("/", (req, res) => res.send("OK"));
+
+const PORT = process.env.PORT;
+app.listen(PORT, () => {
+  console.log(`Web server listening on ${PORT}`);
+});
+
+// --- Discord Bot ---
 const client = new Client({
   intents: [GatewayIntentBits.Guilds]
 });
@@ -44,7 +56,8 @@ function rollDice() {
   return Math.floor(Math.random() * 6) + 1;
 }
 
-client.once("clientReady", async () => {
+// ✅ clientReady 대신 ready(안전)
+client.once("ready", async () => {
   console.log("🦝 neoguri 봇 켜짐!");
 
   const command = new SlashCommandBuilder()
@@ -58,12 +71,8 @@ client.on("interactionCreate", async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
   if (interaction.commandName !== "주사위") return;
 
-  // 1️⃣ 먼저 애니메이션
-  await interaction.reply({
-    embeds: [rollingEmbed()]
-  });
+  await interaction.reply({ embeds: [rollingEmbed()] });
 
-  // 2️⃣ 1초 후 결과
   setTimeout(async () => {
     const dice = rollDice();
     await interaction.editReply({
@@ -73,15 +82,3 @@ client.on("interactionCreate", async (interaction) => {
 });
 
 client.login(process.env.BOT_TOKEN);
-
-// --- Render용: 포트 열어두기(무료 Web Service 유지용) ---
-const express = require("express");
-const app = express();
-
-app.get("/", (req, res) => res.send("OK"));
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Web server listening on ${PORT}`);
-});
-
